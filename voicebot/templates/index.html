@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Rishika AI</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<div class="chat-container">
+    <div class="header">
+        Rishika AI ✨
+    </div>
+
+    <div class="chat-box" id="chatBox"></div>
+
+    <div class="input-area">
+        <input type="text" id="message" placeholder="Ask something powerful..." />
+        <button class="mic" onclick="startListening()">🎤</button>
+        <button class="send" onclick="sendMessage()">➤</button>
+    </div>
+</div>
+
+<script>
+function appendMessage(text, className) {
+    let chatBox = document.getElementById("chatBox");
+    let messageDiv = document.createElement("div");
+    messageDiv.className = "message " + className;
+    messageDiv.innerText = text;
+    chatBox.appendChild(messageDiv);
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+function showLoader() {
+    let chatBox = document.getElementById("chatBox");
+    let loader = document.createElement("div");
+    loader.className = "loader";
+    loader.id = "loader";
+    chatBox.appendChild(loader);
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+function removeLoader() {
+    let loader = document.getElementById("loader");
+    if(loader) loader.remove();
+}
+
+function sendMessage() {
+    let input = document.getElementById("message");
+    let message = input.value.trim();
+    if (!message) return;
+
+    appendMessage(message, "user");
+    input.value = "";
+    showLoader();
+
+    fetch("/ask", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ message: message })
+    })
+    .then(response => response.json())
+    .then(data => {
+        removeLoader();
+        appendMessage(data.reply, "bot");
+
+        let speech = new SpeechSynthesisUtterance(data.reply);
+        speech.rate = 1;
+        speech.pitch = 1;
+        speechSynthesis.speak(speech);
+    });
+}
+
+function startListening() {
+    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.lang = "en-US";
+    recognition.start();
+
+    recognition.onresult = function(event) {
+        document.getElementById("message").value =
+            event.results[0][0].transcript;
+    };
+}
+</script>
+
+</body>
+</html>
