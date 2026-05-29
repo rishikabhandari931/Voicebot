@@ -43,9 +43,7 @@ def home():
 @app.route("/ask", methods=["POST"])
 def ask():
     try:
-        user_input = request.json.get("message", "").strip()
-        if not user_input:
-            return jsonify({"reply": "Please ask a question."}), 400
+        user_input = request.json["message"]
 
         completion = client.chat.completions.create(
             model="gpt-4o-mini",
@@ -57,4 +55,16 @@ def ask():
             max_tokens=450
         )
 
-        reply = comp
+        reply = completion.choices[0].message.content.strip()
+
+        return jsonify({
+            "reply": reply
+        })
+
+    except Exception as e:
+        return jsonify({
+            "reply": f"Error: {str(e)}"
+        }), 500
+
+if __name__ == "__main__":
+    app.run(debug=True)
