@@ -6,47 +6,65 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
     <style>
-        body { background: linear-gradient(135deg, #0f172a, #1e2937); font-family: system-ui; }
-        .chat-box { scrollbar-width: thin; scrollbar-color: #64748b #334155; }
-        .message { max-width: 80%; padding: 12px 16px; border-radius: 20px; margin-bottom: 12px; animation: fadeIn 0.3s; }
-        .user { background: #3b82f6; color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
-        .bot { background: #334155; color: white; align-self: flex-start; border-bottom-left-radius: 4px; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: linear-gradient(135deg, #1a1625, #312e81);
+        }
+        .chat-container {
+            backdrop-filter: blur(20px);
+            box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.4);
+        }
+        .message {
+            animation: fadeIn 0.3s ease;
+        }
+        .user { 
+            background: linear-gradient(90deg, #6366f1, #a855f7);
+            color: white;
+        }
+        .bot { 
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .loader {
+            border: 3px solid rgba(255,255,255,0.2);
+            border-top-color: #a855f7;
+        }
     </style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-4">
-<div class="w-full max-w-2xl bg-slate-900 rounded-3xl shadow-2xl overflow-hidden border border-slate-700">
+<div class="chat-container w-full max-w-2xl h-[92vh] bg-white/10 border border-white/20 rounded-3xl overflow-hidden flex flex-col backdrop-blur-xl">
+    
     <!-- Header -->
-    <div class="bg-gradient-to-r from-purple-600 to-pink-600 p-5 text-white flex items-center gap-3">
-        <div class="w-10 h-10 bg-white/20 rounded-2xl flex items-center justify-center text-2xl">✨</div>
+    <div class="header bg-white/10 border-b border-white/10 px-6 py-5 flex items-center gap-4">
+        <div class="w-11 h-11 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center text-3xl shadow-inner">✨</div>
         <div>
-            <h1 class="text-2xl font-bold">Rishika AI</h1>
-            <p class="text-xs opacity-75">Always ready to help</p>
+            <h1 class="text-2xl font-semibold tracking-tight">Rishika AI</h1>
+            <p class="text-xs text-emerald-400 flex items-center gap-1.5"><span class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span> Interview Coach</p>
         </div>
     </div>
 
-    <!-- Chat -->
-    <div id="chatBox" class="chat-box h-[60vh] overflow-y-auto p-6 bg-slate-950 flex flex-col"></div>
+    <!-- Chat Area -->
+    <div id="chatBox" class="flex-1 p-6 overflow-y-auto space-y-5 bg-black/20"></div>
 
     <!-- Input -->
-    <div class="p-5 bg-slate-900 border-t border-slate-700">
+    <div class="p-5 bg-white/5 border-t border-white/10">
         <div class="flex gap-3">
             <input type="text" id="message" 
-                   class="flex-1 bg-slate-800 text-white rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-purple-500 placeholder-slate-400"
-                   placeholder="Ask something powerful...">
-            <button onclick="startListening()" 
-                    class="w-12 h-12 bg-slate-800 hover:bg-slate-700 rounded-2xl flex items-center justify-center text-2xl transition">🎤</button>
-            <button onclick="sendMessage()" 
-                    class="w-12 h-12 bg-purple-600 hover:bg-purple-500 rounded-2xl flex items-center justify-center text-2xl transition">➤</button>
+                   class="flex-1 bg-white/10 border border-white/20 focus:border-purple-400 rounded-3xl px-6 py-4 text-white placeholder:text-white/50 focus:outline-none"
+                   placeholder="Ask any interview question...">
+            <button onclick="startListening()" class="mic w-14 h-14 bg-orange-500 hover:bg-orange-600 rounded-3xl text-2xl flex items-center justify-center transition">🎤</button>
+            <button onclick="sendMessage()" class="send w-14 h-14 bg-gradient-to-br from-indigo-500 to-purple-600 hover:brightness-110 rounded-3xl text-2xl flex items-center justify-center transition">➤</button>
         </div>
     </div>
 </div>
 
 <script>
+/* Same JS as previous version */
 function appendMessage(text, className) {
     const chatBox = document.getElementById("chatBox");
     const div = document.createElement("div");
-    div.className = `message ${className}`;
+    div.className = `message px-5 py-3 rounded-3xl max-w-[75%] ${className}`;
     div.textContent = text;
     chatBox.appendChild(div);
     chatBox.scrollTop = chatBox.scrollHeight;
@@ -55,9 +73,8 @@ function appendMessage(text, className) {
 function showLoader() {
     const chatBox = document.getElementById("chatBox");
     const loader = document.createElement("div");
-    loader.className = "loader self-start text-slate-400 text-sm flex items-center gap-2";
     loader.id = "loader";
-    loader.innerHTML = `<span class="animate-pulse">Rishika is thinking</span>`;
+    loader.className = "loader w-6 h-6 animate-spin mx-auto mt-4";
     chatBox.appendChild(loader);
     chatBox.scrollTop = chatBox.scrollHeight;
 }
@@ -71,36 +88,24 @@ function sendMessage() {
     const input = document.getElementById("message");
     const message = input.value.trim();
     if (!message) return;
-    
-    appendMessage(message, "user");
+    appendMessage(message, "user ml-auto");
     input.value = "";
     showLoader();
 
-    fetch("/ask", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({ message })
-    })
+    fetch("/ask", { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({ message }) })
     .then(r => r.json())
     .then(data => {
         removeLoader();
         appendMessage(data.reply, "bot");
-        const speech = new SpeechSynthesisUtterance(data.reply);
-        speech.rate = 1.05; speech.pitch = 1;
-        speechSynthesis.speak(speech);
+        speechSynthesis.speak(new SpeechSynthesisUtterance(data.reply));
     })
-    .catch(() => {
-        removeLoader();
-        appendMessage("Sorry, something went wrong.", "bot");
-    });
+    .catch(() => { removeLoader(); appendMessage("Sorry, try again.", "bot"); });
 }
 
 function startListening() {
     const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
     recognition.lang = "en-US";
-    recognition.onresult = e => {
-        document.getElementById("message").value = e.results[0][0].transcript;
-    };
+    recognition.onresult = e => document.getElementById("message").value = e.results[0][0].transcript;
     recognition.start();
 }
 </script>
