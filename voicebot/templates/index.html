@@ -6,43 +6,90 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
     <style>
-        body { background: linear-gradient(135deg, #0f172a, #1e2937); font-family: system-ui; }
-        .chat-box { scrollbar-width: thin; scrollbar-color: #64748b #334155; }
-        .message { max-width: 80%; padding: 12px 16px; border-radius: 20px; margin-bottom: 12px; animation: fadeIn 0.3s; }
+        body { background: linear-gradient(135deg, #0f172a, #1e2937); }
+        .chat-box { scrollbar-width: thin; }
+        .message { max-width: 80%; padding: 12px 16px; border-radius: 20px; margin-bottom: 12px; }
         .user { background: #3b82f6; color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
         .bot { background: #334155; color: white; align-self: flex-start; border-bottom-left-radius: 4px; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-4">
-<div class="w-full max-w-2xl bg-slate-900 rounded-3xl shadow-2xl overflow-hidden border border-slate-700">
-    <!-- Header -->
-    <div class="bg-gradient-to-r from-purple-600 to-pink-600 p-5 text-white flex items-center gap-3">
-        <div class="w-10 h-10 bg-white/20 rounded-2xl flex items-center justify-center text-2xl">✨</div>
-        <div>
-            <h1 class="text-2xl font-bold">Rishika AI</h1>
-            <p class="text-xs opacity-75">Always ready to help</p>
+<body class="min-h-screen flex">
+    <!-- Left Sidebar -->
+    <div class="w-80 bg-slate-900 border-r border-slate-700 p-6 flex flex-col">
+        <div class="flex items-center gap-3 mb-8">
+            <div class="w-10 h-10 bg-purple-600 rounded-2xl flex items-center justify-center text-2xl">✨</div>
+            <div>
+                <h1 class="text-2xl font-bold text-white">Rishika AI</h1>
+                <p class="text-sm text-slate-400">Interview Coach</p>
+            </div>
+        </div>
+
+        <h2 class="text-slate-400 text-sm font-medium mb-3">HOW TO USE</h2>
+        <div class="text-slate-300 text-sm space-y-4 mb-8">
+            <p>1. Type or speak your interview question</p>
+            <p>2. Get clear, confident answers in my voice (Rishika)</p>
+            <p>3. Practice follow-ups</p>
+            <p>4. Improve answers with my tips</p>
+        </div>
+
+        <h2 class="text-slate-400 text-sm font-medium mb-3">SUGGESTED QUESTIONS</h2>
+        <div class="space-y-2 text-sm overflow-auto flex-1" id="suggestions">
+            <!-- Populated by JS -->
+        </div>
+
+        <div class="mt-auto pt-6 border-t border-slate-700 text-xs text-slate-500">
+            Rishika AI • Your Interview Persona
         </div>
     </div>
 
-    <!-- Chat -->
-    <div id="chatBox" class="chat-box h-[60vh] overflow-y-auto p-6 bg-slate-950 flex flex-col"></div>
+    <!-- Main Chat -->
+    <div class="flex-1 flex flex-col max-w-3xl mx-auto w-full">
+        <div class="bg-slate-950 p-5 border-b border-slate-700 flex items-center gap-3">
+            <div class="flex-1">
+                <h2 class="font-semibold text-white">Chat with Rishika</h2>
+                <p class="text-xs text-emerald-400">Online • Interview Expert</p>
+            </div>
+        </div>
 
-    <!-- Input -->
-    <div class="p-5 bg-slate-900 border-t border-slate-700">
-        <div class="flex gap-3">
-            <input type="text" id="message" 
-                   class="flex-1 bg-slate-800 text-white rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-purple-500 placeholder-slate-400"
-                   placeholder="Ask something powerful...">
-            <button onclick="startListening()" 
-                    class="w-12 h-12 bg-slate-800 hover:bg-slate-700 rounded-2xl flex items-center justify-center text-2xl transition">🎤</button>
-            <button onclick="sendMessage()" 
-                    class="w-12 h-12 bg-purple-600 hover:bg-purple-500 rounded-2xl flex items-center justify-center text-2xl transition">➤</button>
+        <div id="chatBox" class="flex-1 overflow-y-auto p-6 bg-slate-950 flex flex-col gap-4"></div>
+
+        <div class="p-5 bg-slate-900 border-t border-slate-700">
+            <div class="flex gap-3">
+                <input type="text" id="message" 
+                       class="flex-1 bg-slate-800 text-white rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                       placeholder="Ask any interview question...">
+                <button onclick="startListening()" class="w-12 h-12 bg-slate-800 hover:bg-slate-700 rounded-2xl text-2xl">🎤</button>
+                <button onclick="sendMessage()" class="w-12 h-12 bg-purple-600 hover:bg-purple-500 rounded-2xl text-2xl">➤</button>
+            </div>
         </div>
     </div>
-</div>
 
 <script>
+const suggestions = [
+    "Tell me about yourself",
+    "Why do you want to join our company?",
+    "What are your strengths and weaknesses?",
+    "Where do you see yourself in 5 years?",
+    "Describe a challenge you faced at work",
+    "Why should we hire you?",
+    "How do you handle tight deadlines?",
+    "Tell me about your greatest achievement"
+];
+
+function populateSuggestions() {
+    const container = document.getElementById("suggestions");
+    suggestions.forEach(q => {
+        const btn = document.createElement("button");
+        btn.className = "w-full text-left px-4 py-3 bg-slate-800 hover:bg-slate-700 rounded-2xl text-slate-300 transition";
+        btn.textContent = q;
+        btn.onclick = () => {
+            document.getElementById("message").value = q;
+            sendMessage();
+        };
+        container.appendChild(btn);
+    });
+}
+
 function appendMessage(text, className) {
     const chatBox = document.getElementById("chatBox");
     const div = document.createElement("div");
@@ -55,9 +102,9 @@ function appendMessage(text, className) {
 function showLoader() {
     const chatBox = document.getElementById("chatBox");
     const loader = document.createElement("div");
-    loader.className = "loader self-start text-slate-400 text-sm flex items-center gap-2";
     loader.id = "loader";
-    loader.innerHTML = `<span class="animate-pulse">Rishika is thinking</span>`;
+    loader.className = "self-start text-slate-400 text-sm flex items-center gap-2";
+    loader.innerHTML = `Rishika is thinking...`;
     chatBox.appendChild(loader);
     chatBox.scrollTop = chatBox.scrollHeight;
 }
@@ -86,23 +133,24 @@ function sendMessage() {
         removeLoader();
         appendMessage(data.reply, "bot");
         const speech = new SpeechSynthesisUtterance(data.reply);
-        speech.rate = 1.05; speech.pitch = 1;
+        speech.rate = 1.05;
         speechSynthesis.speak(speech);
     })
     .catch(() => {
         removeLoader();
-        appendMessage("Sorry, something went wrong.", "bot");
+        appendMessage("Sorry, something went wrong. Try again.", "bot");
     });
 }
 
 function startListening() {
     const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
     recognition.lang = "en-US";
-    recognition.onresult = e => {
-        document.getElementById("message").value = e.results[0][0].transcript;
-    };
+    recognition.onresult = e => document.getElementById("message").value = e.results[0][0].transcript;
     recognition.start();
 }
+
+// Initialize
+populateSuggestions();
 </script>
 </body>
 </html>
